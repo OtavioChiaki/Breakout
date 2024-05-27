@@ -1,4 +1,4 @@
-import { Actor, CollisionType, Color, Engine, vec } from "excalibur"
+import { Actor, CollisionType, Color, Engine, Font, Text, vec } from "excalibur"
 
 const game = new Engine({
     width: 800,
@@ -31,7 +31,7 @@ const bolinha = new Actor({
 
 bolinha.body.collisionType = CollisionType.Passive
 
-const velocidadeBolinha = vec(100, 100)
+const velocidadeBolinha = vec(700, 700)
 
 setTimeout(() => {
     bolinha.vel = velocidadeBolinha
@@ -42,11 +42,11 @@ bolinha.on("postupdate", () => {
         bolinha.vel.x = velocidadeBolinha.x
     }
 
-    if (bolinha.pos.x + bolinha.width /2 > game.drawWidth) {
+    if (bolinha.pos.x + bolinha.width / 2 > game.drawWidth) {
         bolinha.vel.x = velocidadeBolinha.x * -1
     }
 
-    if (bolinha.pos.y < bolinha.height / 2){
+    if (bolinha.pos.y < bolinha.height / 2) {
         bolinha.vel.y = velocidadeBolinha.y
     }
 
@@ -67,13 +67,85 @@ const yoffset = 20
 const colunas = 5
 const linhas = 3
 
-const corBloco = [Color.Violet, Color.Orange, Color.Yellow]
+const corBloco = [Color.Red, Color.Orange, Color.Yellow]
 
 const larguraBloco = (game.drawWidth / colunas) - padding - (padding / colunas)
 // const larguraBloco = 136
-const alturaBloco =30
+const alturaBloco = 30
 
 const listaBlocos: Actor[] = []
 
+for (let j = 0; j < linhas; j++) {
 
+    for (let i = 0; i < colunas; i++) {
+        listaBlocos.push(
+            new Actor({
+                x: xoffset + i * (larguraBloco + padding) + padding,
+                y: yoffset + j * (alturaBloco + padding) + padding,
+                width: larguraBloco,
+                height: alturaBloco,
+                color: corBloco[j]
+            })
+        )
+    }
+}
+
+
+
+
+listaBlocos.forEach(bloco => {
+    bloco.body.collisionType = CollisionType.Active
+
+    game.add(bloco)
+})
+
+let pontos = 0
+
+const textoPontos = new Text({
+    text: "hello world",
+    font: new Font ({size: 20})
+})
+
+const objetoTexto = new Actor({
+    x: game.drawWidth - 80,
+    y: game.drawHeight - 15
+})
+
+objetoTexto.graphics.use(textoPontos)
+
+game.add(objetoTexto)
+
+let colidindo: boolean = false
+
+bolinha.on("collisionstart", (event) => {
+
+console.log("colidiu com", event.other)
+
+    if (listaBlocos.includes(event.other)) {
+        event.other.kill()
+    }
+
+    let interseccao = event.contact.mtv.normalize()
+
+    if (!colidindo) {
+        colidindo = true
+
+        if ( Math.abs (interseccao.x) > Math.abs(interseccao.y)) {
+            bolinha.vel.x = bolinha.vel.x * -1
+        } else {
+            bolinha.vel.y = bolinha.vel.y * -1
+        }
+        
+    }
+})
+
+bolinha.on("collisionend", () => {
+    colidindo = false
+})
+
+bolinha.on("exitviewport", () => {
+alert("E Morreu")
+window.location.reload()
+
+})
 game.start()
