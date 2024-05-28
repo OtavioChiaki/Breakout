@@ -1,4 +1,4 @@
-import { Actor, CollisionType, Color, Engine, Font, Text, vec } from "excalibur"
+import { Actor, CollisionType, Color, Engine, Font, FontUnit, Label, Loader, Sound, Text, vec } from "excalibur"
 
 const game = new Engine({
     width: 800,
@@ -101,51 +101,87 @@ listaBlocos.forEach(bloco => {
 
 let pontos = 0
 
-const textoPontos = new Text({
-    text: "hello world",
-    font: new Font ({size: 20})
+const textoPontos = new Label({
+    text: pontos.toString(),
+    font: new Font({
+        size: 40,
+        color: Color.White,
+        strokeColor: Color.Black,
+        unit: FontUnit.Px
+    }),
+    pos: vec(600, 500)
+
 })
 
-const objetoTexto = new Actor({
-    x: game.drawWidth - 80,
-    y: game.drawHeight - 15
-})
 
-objetoTexto.graphics.use(textoPontos)
 
-game.add(objetoTexto)
+game.add(textoPontos)
+
+// const textoPontos = new Text({
+//     text: "hello world",
+//     font: new Font ({size: 20})
+// })
+
+// const objetoTexto = new Actor({
+//     x: game.drawWidth - 80,
+//     y: game.drawHeight - 15
+// })
+
+// objetoTexto.graphics.use(textoPontos)
+
+// game.add(objetoTexto)
 
 let colidindo: boolean = false
 
+const efeitos = new Sound("./src/efeitos/som.mp3");
+const loader = new Loader([efeitos]);
+
 bolinha.on("collisionstart", (event) => {
+    if (pontos != 15) {
+        console.log("colidiu com", event.other)
 
-console.log("colidiu com", event.other)
+        if (listaBlocos.includes(event.other)) {
+            event.other.kill()
 
-    if (listaBlocos.includes(event.other)) {
-        event.other.kill()
-    }
+            efeitos.play();
 
-    let interseccao = event.contact.mtv.normalize()
+            pontos++
 
-    if (!colidindo) {
-        colidindo = true
+            textoPontos.text = pontos.toString()
 
-        if ( Math.abs (interseccao.x) > Math.abs(interseccao.y)) {
-            bolinha.vel.x = bolinha.vel.x * -1
-        } else {
-            bolinha.vel.y = bolinha.vel.y * -1
         }
-        
+
+        let interseccao = event.contact.mtv.normalize()
+
+        if (!colidindo) {
+            colidindo = true
+
+            if (Math.abs(interseccao.x) > Math.abs(interseccao.y)) {
+                bolinha.vel.x = bolinha.vel.x * -1
+            } else {
+                bolinha.vel.y = bolinha.vel.y * -1
+            }
+
+        }
+    } else {
+        alert("Terminou :D")
+        window.location.reload()
     }
+
+
 })
+
+
 
 bolinha.on("collisionend", () => {
     colidindo = false
 })
 
 bolinha.on("exitviewport", () => {
-alert("E Morreu")
-window.location.reload()
+    alert("E Morreu")
+    window.location.reload()
 
 })
-game.start()
+
+
+game.start(loader)
