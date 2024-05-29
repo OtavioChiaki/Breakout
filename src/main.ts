@@ -9,7 +9,7 @@ const game = new Engine({
 const barra = new Actor({
     x: 150,
     y: game.drawHeight - 40,
-    width: 200,
+    width: 10,
     height: 20,
     color: Color.Chartreuse
 })
@@ -30,6 +30,21 @@ const bolinha = new Actor({
 })
 
 bolinha.body.collisionType = CollisionType.Passive
+
+let coresBolinha =  [
+    Color.Black,
+    Color.Chartreuse,
+    Color.Cyan,
+    Color.Green,
+    Color.Magenta,
+    Color.Orange,
+    Color.Red,
+    Color.Rose,
+    Color.White,
+    Color.Yellow
+    ]
+
+    let numeroCores = coresBolinha.length
 
 const velocidadeBolinha = vec(700, 700)
 
@@ -96,6 +111,7 @@ for (let j = 0; j < linhas; j++) {
 listaBlocos.forEach(bloco => {
     bloco.body.collisionType = CollisionType.Active
 
+
     game.add(bloco)
 })
 
@@ -131,10 +147,12 @@ game.add(textoPontos)
 
 // game.add(objetoTexto)
 
+
 let colidindo: boolean = false
 
 const efeitos = new Sound("./src/efeitos/som.mp3");
-const loader = new Loader([efeitos]);
+const gameOversom = new Sound("./src/efeitos/roblox.mp3")
+const loader = new Loader([efeitos, gameOversom]);
 
 bolinha.on("collisionstart", (event) => {
     if (pontos != 15) {
@@ -146,6 +164,9 @@ bolinha.on("collisionstart", (event) => {
             efeitos.play();
 
             pontos++
+
+            bolinha.color = coresBolinha[ Math.trunc( Math.random () * numeroCores)]
+
 
             textoPontos.text = pontos.toString()
 
@@ -175,13 +196,18 @@ bolinha.on("collisionstart", (event) => {
 
 bolinha.on("collisionend", () => {
     colidindo = false
+    
 })
 
 bolinha.on("exitviewport", () => {
+
+    gameOversom.play(1)
+    .then (() => {
     alert("E Morreu")
     window.location.reload()
 
+    })
 })
 
 
-game.start(loader)
+await game.start(loader)
